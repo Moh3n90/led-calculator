@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8">
+  <title>محاسبه گر متراژ و قیمت نمایشگر</title>
+  <style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .led-container {
+        background-color: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        max-width: 800px;
+        margin: 20px auto;
+        overflow: hidden;
+    }
+    .led-header {
+        background: linear-gradient(90deg, #2c3e50, #4ca1af);
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
+    .led-header h1 {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+    .led-header p {
+        font-size: 14px;
+        opacity: 0.9;
+    }
+    .led-space-toggle {
+        display: flex;
+        background-color: #e0e0e0;
+        margin: 20px;
+        border-radius: 50px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .led-space-toggle button {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .led-space-toggle button.active {
+        background: linear-gradient(90deg, #2c3e50, #4ca1af);
+        color: white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .led-space-toggle button:not(.active):hover {
+        background-color: #d0d0d0;
+    }
+    .led-calculator {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        padding: 0 25px 25px;
+    }
+    @media (max-width: 768px) {
+        .led-calculator {
+            grid-template-columns: 1fr;
+        }
+    }
+    .led-input-section, .led-result-section {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+    .led-form-group {
+        margin-bottom: 20px;
+    }
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    select, input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: border-color 0.3s;
+    }
+    select:focus, input:focus {
+        border-color: #4ca1af;
+        outline: none;
+    }
+    .led-dimension-inputs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+    .led-slider-container {
+        margin-top: 8px;
+    }
+    .led-slider {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 8px;
+        border-radius: 5px;
+        background: #ddd;
+        outline: none;
+    }
+    .led-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #4ca1af;
+        cursor: pointer;
+    }
+    .led-slider-value {
+        text-align: center;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-top: 5px;
+    }
+    .led-result-section {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .led-result-box {
+        background: linear-gradient(135deg, #fdfcfb, #e2d1c3);
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+    .led-result-title {
+        font-size: 18px;
+        color: #2c3e50;
+        margin-bottom: 10px;
+    }
+    .led-result-value {
+        font-size: 28px;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+    .led-contact-link {
+        display: block;
+        text-align: center;
+        margin: 25px;
+        background: linear-gradient(90deg, #2c3e50, #4ca1af);
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: all 0.3s;
+        box-shadow: 0 4px 10px rgba(0, 0, 102, 0.3);
+    }
+    .led-contact-link:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0, 0, 102, 0.4);
+    }
+    .led-display-image {
+        width: 100%;
+        height: 150px;
+        background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin: 25px 0;
+        color: #666;
+        font-style: italic;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    .led-display-image::before {
+        content: '';
+        position: absolute;
+        width: 80%;
+        height: 70%;
+        background: rgba(0, 0, 102, 0.1);
+        border: 2px dashed #000066;
+        border-radius: 5px;
+    }
+    .led-display-label {
+        position: absolute;
+        background: rgba(10, 20, 50, 0.8);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 14px;
+        z-index: 2;
+    }
+    .led-length-label {
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    .led-height-label {
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+    }
+    .led-ratio-result {
+        text-align: center;
+        font-weight: bold;
+        color: #2c3e50;
+        font-size: 18px;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 5px;
+    }
+    .led-ratio-note {
+        text-align: center;
+        font-size: 12px;
+        color: #6c757d;
+    }
+  </style>
+</head>
+<body>
+  <div class="led-container">
+    <div class="led-header">
+      <h1>محاسبه گر متراژ و قیمت نمایشگر</h1>
+      <p>محاسبه دقیق متراژ و قیمت نمایشگرهای شهری بر اساس ابعاد و مدل انتخابی</p>
+    </div>
+
+    <div class="led-space-toggle">
+      <button id="ledIndoorBtn" class="active">فضای داخل</button>
+      <button id="ledOutdoorBtn">فضای خارج</button>
+    </div>
+
+    <div class="led-calculator">
+      <div class="led-input-section">
+        <div class="led-form-group">
+          <label for="ledModel">مدل ویدیو وال</label>
+          <select id="ledModel"></select>
+        </div>
+
+        <div class="led-form-group">
+          <label>ابعاد نمایشگر (متر)</label>
+          <div class="led-dimension-inputs">
+            <div>
+              <label for="ledWidth">طول</label>
+              <input type="number" id="ledWidth" min="0.1" max="10" step="0.01" value="3.20">
+              <div class="led-slider-container">
+                <input type="range" min="1" max="100" value="32" class="led-slider" id="ledWidthSlider">
+                <div class="led-slider-value" id="ledWidthValue">3.20 متر</div>
+              </div>
+            </div>
+            <div>
+              <label for="ledHeight">ارتفاع</label>
+              <input type="number" id="ledHeight" min="0.1" max="10" step="0.01" value="1.60">
+              <div class="led-slider-container">
+                <input type="range" min="1" max="100" value="16" class="led-slider" id="ledHeightSlider">
+                <div class="led-slider-value" id="ledHeightValue">1.60 متر</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="led-form-group">
+          <label>نسبت تصویر</label>
+          <div class="led-ratio-result" id="ledRatioResult">2.00 : 1</div>
+          <div class="led-ratio-note">(طول تقسیم بر ارتفاع)</div>
+        </div>
+      </div>
+
+      <div class="led-result-section">
+        <div class="led-result-box">
+          <div class="led-result-title">مساحت نمایشگر</div>
+          <div class="led-result-value" id="ledAreaResult">5.12 متر مربع</div>
+        </div>
+
+        <div class="led-display-image">
+          <div class="led-display-label led-length-label" id="ledDisplayLength">3.20 متر</div>
+          <div class="led-display-label led-height-label" id="ledDisplayHeight">1.60 متر</div>
+        </div>
+      </div>
+    </div>
+
+    <a href="#" class="led-contact-link">برای استعلام دقیق با ما تماس بگیرید</a>
+  </div>
+
+  <script>
+    // المان‌ها
+    const widthInput = document.getElementById('ledWidth');
+    const heightInput = document.getElementById('ledHeight');
+    const widthSlider = document.getElementById('ledWidthSlider');
+    const heightSlider = document.getElementById('ledHeightSlider');
+    const widthValue = document.getElementById('ledWidthValue');
+    const heightValue = document.getElementById('ledHeightValue');
+    const modelSelect = document.getElementById('ledModel');
+    const areaResult = document.getElementById('ledAreaResult');
+    const displayLength = document.getElementById('ledDisplayLength');
+    const displayHeight = document.getElementById('ledDisplayHeight');
+    const indoorBtn = document.getElementById('ledIndoorBtn');
+    const outdoorBtn = document.getElementById('ledOutdoorBtn');
+    const ratioResult = document.getElementById('ledRatioResult');
+
+    const indoorOptions = [
+        { value: 'p1.25', label: 'P1.25' },
+        { value: 'p1.53', label: 'P1.53' },
+        { value: 'p1.86', label: 'P1.86' },
+        { value: 'p2', label: 'P2' },
+        { value: 'p2.5', label: 'P2.5' },
+        { value: 'p3', label: 'P3' },
+        { value: 'p4', label: 'P4' }
+    ];
+    const outdoorOptions = [
+        { value: 'p2.5', label: 'P2.5' },
+        { value: 'p3', label: 'P3' },
+        { value: 'p4', label: 'P4' },
+        { value: 'p5', label: 'P5' },
+        { value: 'p6.6', label: 'P6.6' },
+        { value: 'p10', label: 'P10' }
+    ];
+    let isIndoor = true;
+
+    function updateModelOptions() {
+        modelSelect.innerHTML = '';
+        const options = isIndoor ? indoorOptions : outdoorOptions;
+        options.forEach(option => {
+            const optionElement = document.createElement('option');
+            optionElement.value = option.value;
+            optionElement.textContent = option.label;
+            modelSelect.appendChild(optionElement);
+        });
+    }
+
+    widthInput.addEventListener('input', function() {
+        const value = parseFloat(widthInput.value) || 0;
+        widthSlider.value = value * 10;
+        widthValue.textContent = value.toFixed(2) + ' متر';
+        updateDimensionDisplay();
+        calculateArea();
+        calculateAspectRatio();
+    });
+    heightInput.addEventListener('input', function() {
+        const value = parseFloat(heightInput.value) || 0;
+        heightSlider.value = value * 10;
+        heightValue.textContent = value.toFixed(2) + ' متر';
+        updateDimensionDisplay();
+        calculateArea();
+        calculateAspectRatio();
+    });
+    widthSlider.addEventListener('input', function() {
+        const value = widthSlider.value / 10;
+        widthInput.value = value.toFixed(2);
+        widthValue.textContent = value.toFixed(2) + ' متر';
+        updateDimensionDisplay();
+        calculateArea();
+        calculateAspectRatio();
+    });
+    heightSlider.addEventListener('input', function() {
+        const value = heightSlider.value / 10;
+        heightInput.value = value.toFixed(2);
+        heightValue.textContent = value.toFixed(2) + ' متر';
+        updateDimensionDisplay();
+        calculateArea();
+        calculateAspectRatio();
+    });
+
+    function updateDimensionDisplay() {
+        const widthVal = parseFloat(widthInput.value).toFixed(2);
+        const heightVal = parseFloat(heightInput.value).toFixed(2);
+        displayLength.textContent = widthVal + ' متر';
+        displayHeight.textContent = heightVal + ' متر';
+    }
+
+    function calculateArea() {
+        const width = parseFloat(widthInput.value) || 0;
+        const height = parseFloat(heightInput.value) || 0;
+        const area = width * height;
+        areaResult.textContent = area.toFixed(2) + ' متر مربع';
+    }
+
+    function calculateAspectRatio() {
+        const width = parseFloat(widthInput.value) || 0;
+        const height = parseFloat(heightInput.value) || 0;
+        if (height === 0) {
+            ratioResult.textContent = "نامعلوم";
+            return;
+        }
+        const ratio = (width / height).toFixed(2);
+        ratioResult.textContent = `${ratio} : 1`;
+    }
+
+    indoorBtn.addEventListener('click', function() {
+        isIndoor = true;
+        indoorBtn.classList.add('active');
+        outdoorBtn.classList.remove('active');
+        updateModelOptions();
+    });
+    outdoorBtn.addEventListener('click', function() {
+        isIndoor = false;
+        outdoorBtn.classList.add('active');
+        indoorBtn.classList.remove('active');
+        updateModelOptions();
+    });
+
+    // اجرای اولیه
+    updateModelOptions();
+    updateDimensionDisplay();
+    calculateArea();
+    calculateAspectRatio();
+  </script>
+</body>
+</html>
